@@ -26,10 +26,10 @@ class GenerarCsvController {
                 iProxy.inicioAnalisis("GenerarReporte");
 
             }catch (Exception e){
-//            return ResponseEntity.internalServerError()
-//                    .body("Error procesando archivo: " + fileName +
-//                            " | Opción: " + opcion +
-//                            " | Detalle: " + e.getMessage());
+                String mensajeError = "Error al generar el archivo CSV: " + e.getMessage();
+                return ResponseEntity.internalServerError()
+                        .header("Content-Type", "text/plain; charset=UTF-8")
+                        .body(mensajeError.getBytes(StandardCharsets.UTF_8));
             }
             ReporteGenerado reporteGenerado = ReporteGenerado.getInstance();
             IReportBuilder reporte = reporteGenerado.getBuilder();
