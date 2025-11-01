@@ -53,6 +53,9 @@ public class ProxyAplicativo implements IProxy {
             if(resultadoParseo.size() == 0){
                 throw new IllegalArgumentException("el archivo está vacío o no tiene una estructura fasta para generar análisis");
             }
+            if(opciones.contains("Calcular Alineamiento") && resultadoParseo.size() < 2){
+                throw new IllegalArgumentException("el archivo no tiene las dos secuencias iniciales paga generar el cáculo de Alineamiento.");
+            }
             resultadoParseo.forEach((key,value)->{
                 if(value.isBlank()){
                     throw new IllegalArgumentException("Las cadenas genéticas no pueden ser vacías");
