@@ -13,8 +13,6 @@ REQUISITOS:
 - MySQL 8.0+
 - IntelliJ IDEA (opcional pero recomendado)
 
-Se recomienda usar un entorno aislado para manejar las dependencias.
-
 1. Crear la base de datos con el script SQL suministrado.
 2. Actualizar el usuario y contraseña de la base de datos en el archivo application.properties.
 3. Compilar e iniciar la aplicación con el siguiente comando:
