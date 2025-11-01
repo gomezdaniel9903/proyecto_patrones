@@ -40,8 +40,8 @@ class GenerarCsvController {
             List<String> opciones = analisisSeleccionados.getDatos();
             if(opciones.contains("Calcular Alineamiento")){
                 Map<String,String> respuesta = report.getAlineamientoSecuencias();
-                datos.add(new String[]{"Alineamiento Secuencias", respuesta.get("nombre1"),respuesta.get("nombre2")
-                        ,respuesta.get("cadenaUno"),respuesta.get("cadenaDos"),respuesta.get("respuesta")});
+                datos.add(new String[]{"Alineamiento Secuencias", respuesta.get("nombre1"),respuesta.get("cadenaUno")
+                        ,respuesta.get("nombre2"),respuesta.get("cadenaDos"),respuesta.get("respuesta")});
             }
 
             if(opciones.contains("Detección de Motivo")){
