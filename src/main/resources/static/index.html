@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Importar FASTA</title>
+    <script>
+        async function enviarDatos() {
+            const archivoInput = document.getElementById("fastaFile");
+            const archivo = archivoInput.files[0];
+            const checkboxes = document.querySelectorAll('input[name="opcion"]:checked');
+            const opcionesSeleccionadas = Array.from(checkboxes).map(c => c.value);
+            const botonEnviar = document.getElementById("btnEnviar");
+
+            if (!archivo) {
+                alert("Debes seleccionar un archivo FASTA o txt antes de enviar.");
+                return;
+            }
+
+            if (opcionesSeleccionadas.length === 0) {
+                alert("Debes seleccionar al menos una opción antes de enviar.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", archivo);
+            opcionesSeleccionadas.forEach(op => formData.append("opciones[]", op));
+
+            try {
+                botonEnviar.disabled = true;
+                const response = await fetch('/api/fasta/upload', {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error(await response.text());
+
+                alert("Análisis Finalizado.");
+
+                document.querySelectorAll('input[name="opcion"]').forEach(cb => cb.disabled = true);
+                botonEnviar.disabled = true;
+
+                document.getElementById("accionesExtra").style.display = "block";
+
+                document.getElementById("btnLimpiar").style.display = "inline-block";
+
+            } catch (error) {
+                alert("Ocurrió un error: " + error.message);
+                botonEnviar.disabled = false;
+            }
+        }
+
+        async function cargarOpciones() {
+            try {
+                const response = await fetch('/api/opcionesAnalisis');
+                if (!response.ok) throw new Error("No se pudieron cargar las opciones.");
+
+                const opciones = await response.json();
+                const contenedor = document.getElementById("opcionesContainer");
+                contenedor.innerHTML = "";
+
+                opciones.forEach(opcion => {
+                    const label = document.createElement("label");
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.name = "opcion";
+                    checkbox.value = opcion;
+
+                    label.appendChild(checkbox);
+                    label.append(" " + opcion);
+                    contenedor.appendChild(label);
+                    contenedor.appendChild(document.createElement("br"));
+                });
+            } catch (error) {
+                alert("Error cargando opciones: " + error.message);
+            }
+        }
+
+        async function exportarCsv() {
+            try {
+                const response = await fetch('/exportarCsv');
+                if (!response.ok) throw new Error("No se pudo exportar el CSV.");
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'resultado.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert("Error exportando CSV: " + error.message);
+            }
+        }
+
+        async function verPantalla() {
+            try {
+                const response = await fetch('/verPantalla');
+                if (!response.ok) throw new Error("Error al obtener la pantalla.");
+
+                const data = await response.text();
+                const divResultado = document.getElementById("resultadoPantalla");
+                divResultado.innerHTML = data;
+                divResultado.style.display = "block";
+            } catch (error) {
+                alert("Error al cargar la pantalla: " + error.message);
+            }
+        }
+
+        // 👉 Función para limpiar todo
+        async function limpiarTodo() {
+            try {
+                // 🔹 Llamar al backend para limpiar los datos
+                const response = await fetch('/api/limpiarDatos', { method: "POST" });
+                if (!response.ok) throw new Error("No se pudieron limpiar los datos del servidor");
+
+                const mensaje = await response.text();
+                alert(mensaje);
+            } catch (error) {
+                alert("⚠️ Error limpiando datos del backend: " + error.message);
+            }
+
+            // 🔹 Limpieza del frontend
+            document.getElementById("fastaFile").value = "";
+            document.querySelectorAll('input[name="opcion"]').forEach(cb => {
+                cb.checked = false;
+                cb.disabled = false;
+            });
+            document.getElementById("btnEnviar").disabled = false;
+            document.getElementById("accionesExtra").style.display = "none";
+            document.getElementById("resultadoPantalla").style.display = "none";
+            document.getElementById("resultadoPantalla").innerHTML = "";
+            document.getElementById("btnLimpiar").style.display = "none";
+        }
+
+        window.onload = cargarOpciones;
+    </script>
+</head>
+
+<body>
+<h1>Subir archivo FASTA o .txt</h1>
+
+<label>Seleccionar Archivo FASTA o txt:</label><br>
+<input type="file" id="fastaFile" accept=".fasta, .txt"><br><br>
+
+<label>Seleccionar opciones:</label><br>
+<div id="opcionesContainer">Cargando opciones...</div><br>
+
+<button id="btnEnviar" onclick="enviarDatos()">Enviar</button>
+<button id="btnLimpiar" onclick="limpiarTodo()" style="display:none;">🔄 Volver a Analizar</button>
+
+<!-- 🔽 Botones ocultos que se muestran tras enviar -->
+<div id="accionesExtra" style="display:none; margin-top:20px;">
+    <hr>
+    <h3>Acciones adicionales:</h3>
+    <button onclick="exportarCsv()">📄 Exportar CSV</button>
+    <button onclick="verPantalla()">👁 Ver Pantalla</button>
+</div>
+
+<!-- 🔽 Aquí se mostrará el resultado de /verPantalla -->
+<div id="resultadoPantalla" style="display:none; margin-top:20px; border:1px solid #ccc; padding:10px;"></div>
+</body>
+</html>
