@@ -9,7 +9,7 @@ public class GestionAplicativo  {
 
     public void comenzar(String opcion) {
         if(metodo == null) {
-            System.out.println("No selecciono metodo de pago");
+            throw new IllegalArgumentException("No se seleccionó método de análisis");
         } else{
             metodo.iniciar(opcion);
         }
